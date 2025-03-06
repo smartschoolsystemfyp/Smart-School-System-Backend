@@ -1,3 +1,4 @@
+import Attendance from "../models/attendance.model.js";
 import Student from "../models/student.model.js";
 
 class StudentController {
@@ -25,20 +26,52 @@ class StudentController {
     });
   }
 
-  // Retrieve all students
   async getAllStudents(req, res) {
     const { classId, name } = req.query;
 
     const query = {};
-
     if (classId) query.class = classId;
     if (name) query.name = { $regex: name, $options: "i" };
 
     const students = await Student.find(query).populate("class", "className");
+
+    const studentIds = students.map((student) => student._id);
+
+    const attendanceRecords = await Attendance.aggregate([
+      { $match: { referenceId: { $in: studentIds }, attendanceOf: "Student" } },
+      {
+        $group: {
+          _id: "$referenceId",
+          totalDays: { $sum: 1 },
+          presentDays: {
+            $sum: { $cond: [{ $eq: ["$status", "Present"] }, 1, 0] },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          attendancePercentage: {
+            $multiply: [{ $divide: ["$presentDays", "$totalDays"] }, 100],
+          },
+        },
+      },
+    ]);
+
+    const attendanceMap = attendanceRecords.reduce((acc, record) => {
+      acc[record._id] = record.attendancePercentage.toFixed(2); // Format to 2 decimal places
+      return acc;
+    }, {});
+
+    const studentsWithAttendance = students.map((student) => ({
+      ...student.toObject(),
+      attendancePercentage: attendanceMap[student._id] || "0.00",
+    }));
+
     return res.status(200).json({
       success: true,
       message: "Students retrieved successfully",
-      students,
+      students: studentsWithAttendance,
     });
   }
 
@@ -61,6 +94,8 @@ class StudentController {
   // Update student details
   async updateStudent(req, res) {
     const { id } = req.params;
+    console.log(req.body.classId);
+
     const updatedStudent = await Student.findByIdAndUpdate(id, req.body, {
       new: true,
     });

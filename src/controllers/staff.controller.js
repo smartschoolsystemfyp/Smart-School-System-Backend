@@ -1,3 +1,4 @@
+import Attendance from "../models/attendance.model.js";
 import Staff from "../models/staff.model.js";
 
 class StaffController {
@@ -11,10 +12,44 @@ class StaffController {
     if (name) query.name = { $regex: name, $options: "i" };
 
     const staff = await Staff.find(query).select("-password");
+
+    const staffIds = staff.map((staff) => staff._id);
+
+    const attendanceRecords = await Attendance.aggregate([
+      { $match: { referenceId: { $in: staffIds }, attendanceOf: "Staff" } },
+      {
+        $group: {
+          _id: "$referenceId",
+          totalDays: { $sum: 1 },
+          presentDays: {
+            $sum: { $cond: [{ $eq: ["$status", "Present"] }, 1, 0] },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          attendancePercentage: {
+            $multiply: [{ $divide: ["$presentDays", "$totalDays"] }, 100],
+          },
+        },
+      },
+    ]);
+
+    const attendanceMap = attendanceRecords.reduce((acc, record) => {
+      acc[record._id] = record.attendancePercentage.toFixed(2);
+      return acc;
+    }, {});
+
+    const studentsWithAttendance = staff.map((staff) => ({
+      ...staff.toObject(),
+      attendancePercentage: attendanceMap[staff._id] || "0.00",
+    }));
+
     return res.status(200).json({
       success: true,
       message: "Staff members retrieved successfully",
-      staff,
+      staff: studentsWithAttendance,
     });
   }
 
