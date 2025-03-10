@@ -1,12 +1,8 @@
 import Mark from "../models/mark.model.js";
-import Student from "../models/student.model.js";
-import Subject from "../models/subject.model.js";
 
 class MarksController {
   async bulkUploadMarks(req, res) {
     const { examType, marksData } = req.body;
-
-    console.log(examType, marksData);
 
     if (!examType || !marksData || marksData.length === 0) {
       return res.status(400).json({
