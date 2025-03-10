@@ -137,7 +137,7 @@ class AuthController {
       success: true,
       message: "Staff logged in successfully",
       token,
-      teacher: {
+      staff: {
         _id: teacher._id,
         name: teacher.name,
         email: teacher.email,

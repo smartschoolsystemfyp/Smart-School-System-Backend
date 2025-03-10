@@ -28,6 +28,18 @@ class AttendanceController {
           throw new Error(`Student with ID ${record.studentId} not found`);
         }
 
+        const existingAttendance = await Attendance.findOne({
+          referenceId: record.studentId,
+          date: record.date,
+          attendanceOf: "Student",
+        });
+
+        if (existingAttendance) {
+          throw new Error(
+            `Attendance already marked`
+          );
+        }
+
         if (record.status === "Absent") {
           await transporter.sendMail({
             from: process.env.EMAIL_USER,
@@ -94,6 +106,18 @@ class AttendanceController {
 
     if (!Array.isArray(attendanceRecords) || attendanceRecords.length === 0) {
       throw new Error("Attendance records must be a non-empty array");
+    }
+
+    for (const record of attendanceRecords) {
+      const existingAttendance = await Attendance.findOne({
+        referenceId: record.staffId,
+        date: record.date,
+        attendanceOf: "Staff",
+      });
+
+      if (existingAttendance) {
+        throw new Error(`Attendance already marked.`);
+      }
     }
 
     const formattedRecords = attendanceRecords.map((record) => ({
