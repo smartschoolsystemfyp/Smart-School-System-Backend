@@ -1,4 +1,5 @@
 import Mark from "../models/mark.model.js";
+import Student from "../models/student.model.js";
 
 class MarksController {
   async bulkUploadMarks(req, res) {
@@ -85,17 +86,29 @@ class MarksController {
     });
   }
 
-  // Retrieve marks based on filters
   async getMarks(req, res) {
-    const { studentId, subjectId, examType } = req.query;
+    const { classId, subjectId, examType } = req.query;
 
     const query = {};
-    if (studentId) query.student = studentId;
+
+    if (classId) {
+      const students = await Student.find({ class: classId }).select("_id");
+      const studentIds = students.map((student) => student._id);
+      query.student = { $in: studentIds };
+    }
+
     if (subjectId) query.subject = subjectId;
     if (examType) query.examType = examType;
 
     const marks = await Mark.find(query)
-      .populate("student", "name email")
+      .populate({
+        path: "student",
+        select: "name email class",
+        populate: {
+          path: "class",
+          select: "className",
+        },
+      })
       .populate("subject", "subjectName");
 
     return res.status(200).json({
