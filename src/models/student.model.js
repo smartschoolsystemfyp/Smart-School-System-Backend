@@ -5,6 +5,18 @@ const StudentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  rollNumber: {
+    type: String,
+    required: true,
+  },
+  fatherName: {
+    type: String,
+    required: true,
+  },
+  motherName: {
+    type: String,
+    required: true,
+  },
   dob: {
     type: Date,
     required: true,
@@ -19,21 +31,39 @@ const StudentSchema = new mongoose.Schema({
     unique: true,
     required: true,
   },
+  bFormNumber: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   address: {
-    street: String,
-    city: String,
-    state: String,
-    postalCode: String,
-    country: String,
+    type: String,
+    required: true,
+  },
+  admissionDate: {
+    type: Date,
+    required: true,
+  },
+  bloodGroup: {
+    type: String,
+    required: true,
+  },
+  religion: {
+    type: String,
+    required: true,
+  },
+  cast: {
+    type: String,
+    required: true,
   },
   class: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Class",
     required: true,
   },
-  registrationDate: {
-    type: Date,
-    default: Date.now,
+  orphan: {
+    type: String,
+    required: true,
   },
 });
 

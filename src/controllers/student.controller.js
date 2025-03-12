@@ -4,18 +4,59 @@ import Student from "../models/student.model.js";
 class StudentController {
   // Add a new student
   async registerStudent(req, res) {
-    const { name, dob, email, phoneNumber, address, classId } = req.body;
+    const {
+      name,
+      rollNumber,
+      fatherName,
+      motherName,
+      dob,
+      email,
+      phoneNumber,
+      bFormNumber,
+      address,
+      admissionDate,
+      bloodGroup,
+      religion,
+      cast,
+      classId,
+      orphan,
+    } = req.body;
 
-    if (!name || !dob || !email || !phoneNumber || !classId) {
+    if (
+      !name ||
+      !rollNumber ||
+      !fatherName ||
+      !motherName ||
+      !dob ||
+      !email ||
+      !phoneNumber ||
+      !bFormNumber ||
+      !address ||
+      !admissionDate ||
+      !bloodGroup ||
+      !religion ||
+      !cast ||
+      !classId ||
+      !orphan
+    ) {
       throw new Error("All fields are required");
     }
 
     const student = await Student.create({
       name,
+      rollNumber,
+      fatherName,
+      motherName,
       dob,
       email,
       phoneNumber,
+      bFormNumber,
       address,
+      admissionDate,
+      bloodGroup,
+      religion,
+      cast,
+      orphan,
       class: classId,
     });
 
@@ -59,7 +100,7 @@ class StudentController {
     ]);
 
     const attendanceMap = attendanceRecords.reduce((acc, record) => {
-      acc[record._id] = record.attendancePercentage.toFixed(2); // Format to 2 decimal places
+      acc[record._id] = record.attendancePercentage.toFixed(2);
       return acc;
     }, {});
 
@@ -94,7 +135,6 @@ class StudentController {
   // Update student details
   async updateStudent(req, res) {
     const { id } = req.params;
-    console.log(req.body.classId);
 
     const updatedStudent = await Student.findByIdAndUpdate(id, req.body, {
       new: true,
