@@ -82,11 +82,47 @@ class AuthController {
 
   // Register a new staff member (Teacher or Non-Teaching)
   async registerStaff(req, res) {
-    const { name, email, phoneNumber, role, password } = req.body;
+    const {
+      name,
+      fatherName,
+      dob,
+      email,
+      phoneNumber,
+      cnicNumber,
+      address,
+      dateOfJoining,
+      dateOfSupernation,
+      designation,
+      bankName,
+      bankBranchName,
+      ibanNumber,
+      accountNumber,
+      role,
+      password,
+    } = req.body;
 
-    if (!name || !email || !phoneNumber || !role) {
+    if (
+      !name ||
+      !fatherName ||
+      !dob ||
+      !email ||
+      !phoneNumber ||
+      !cnicNumber ||
+      !address ||
+      !dateOfJoining ||
+      !dateOfSupernation ||
+      !designation ||
+      !bankName ||
+      !bankBranchName ||
+      !ibanNumber ||
+      !accountNumber ||
+      !role
+    ) {
       throw new Error("All fields are required");
     }
+
+    if (role === "Teacher" && !password)
+      throw new Error("Password is required for teacher");
 
     const existingStaff = await Staff.findOne({ email });
 
@@ -98,8 +134,19 @@ class AuthController {
 
     const staff = await Staff.create({
       name,
+      fatherName,
+      dob,
       email,
       phoneNumber,
+      cnicNumber,
+      address,
+      dateOfJoining,
+      dateOfSupernation,
+      designation,
+      bankName,
+      bankBranchName,
+      ibanNumber,
+      accountNumber,
       role,
       password: hashedPassword,
     });

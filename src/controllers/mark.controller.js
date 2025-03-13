@@ -103,7 +103,7 @@ class MarksController {
     const marks = await Mark.find(query)
       .populate({
         path: "student",
-        select: "name email class",
+        select: "name rollNumber",
         populate: {
           path: "class",
           select: "className",
