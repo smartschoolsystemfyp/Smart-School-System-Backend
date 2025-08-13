@@ -2,6 +2,7 @@ import Admin from "../models/admin.model.js";
 import Staff from "../models/staff.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 const generateToken = (id, name, role) => {
   return jwt.sign({ id, name, role }, process.env.JWT_SECRET);
@@ -274,6 +275,77 @@ class AuthController {
     return res.status(200).json({
       success: true,
       message: "Staff password updated successfully",
+    });
+  }
+
+  async forgetPassword(req, res) {
+    const { email } = req.body;
+
+    if (!email) throw new Error("Email is required");
+
+    const admin = await Admin.findOne({ email });
+
+    if (!admin) throw new Error("Invalid email address");
+
+    const token = generateToken(admin._id, admin.name, "admin");
+
+    const resetURL = `${process.env.CLIENT_URL}/reset-password?token=${token}&id=${admin._id}`;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: admin.email,
+      subject: "Password Recovery",
+      text: `Dear ${admin.name},.\n\nYour password reset link is ${resetURL}\n\nBest regards,\nSchool Management`,
+    });
+
+    admin.forgetPasswordToken = token;
+
+    await admin.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset email sent successfully",
+    });
+  }
+
+  async resetPassword(req, res) {
+    const { newPassword, confirmPassword, adminId, forgetPasswordToken } =
+      req.body;
+
+    const admin = await Admin.findById(adminId);
+
+    if (!admin) throw new Error("Admin not found");
+
+    if (admin.forgetPasswordToken !== forgetPasswordToken)
+      throw new Error("Invalid verify password tokrn");
+
+    if (newPassword !== confirmPassword)
+      throw new Error("Passwords don't match");
+
+    if (await bcrypt.compare(newPassword, admin.password))
+      throw new Error(
+        "The new password cannot be the same as your old password."
+      );
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    admin.password = hashedPassword;
+    admin.forgetPasswordToken = undefined;
+
+    await admin.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password set successfully",
     });
   }
 }

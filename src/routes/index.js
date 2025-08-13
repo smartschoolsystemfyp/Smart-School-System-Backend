@@ -16,6 +16,8 @@ const router = express.Router();
 
 // /_____________________________Authentication Routes_________________________________
 router.post("/admin/register", catchError(AuthController.registerAdmin));
+router.post("/forget-password", catchError(AuthController.forgetPassword));
+router.post("/reset-password", catchError(AuthController.resetPassword));
 router.post("/admin/login", catchError(AuthController.loginAdmin));
 router.get(
   "/admin/logout",
