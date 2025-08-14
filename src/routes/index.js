@@ -11,6 +11,8 @@ import AuthController from "../controllers/authentication.controller.js";
 import AttendanceController from "../controllers/attendance.controller.js";
 import { verifyAdminToken, verifyTeacherToken } from "../middlewares/index.js";
 import insightsController from "../controllers/insights.controller.js";
+import DocumentController from "../controllers/document.controller.js";
+import FundController from "../controllers/fund.controller.js";
 
 const router = express.Router();
 
@@ -28,6 +30,11 @@ router.post(
   "/admin/update-password",
   verifyAdminToken,
   catchError(AuthController.updateAdminPassword)
+);
+router.patch(
+  "/admin/update-profile",
+  verifyAdminToken,
+  catchError(AuthController.updateProfile)
 );
 router.post(
   "/staff/register",
@@ -126,6 +133,50 @@ router.get(
   "/attendance/staff/:staffId",
   verifyAdminToken,
   catchError(AttendanceController.getAttendanceByStaffId)
+);
+
+// /_____________________________Document Routes_________________________________
+router.post(
+  "/document",
+  verifyAdminToken,
+  catchError(DocumentController.createDocumentRecord)
+);
+router.get(
+  "/document",
+  verifyAdminToken,
+  catchError(DocumentController.getAllDocumentRecords)
+);
+router.get(
+  "/document/:id",
+  verifyAdminToken,
+  catchError(DocumentController.getDocumentRecordById)
+);
+router.patch(
+  "/document/:id",
+  verifyAdminToken,
+  catchError(DocumentController.updateDocumentRecord)
+);
+
+// /_____________________________Fund Routes_________________________________
+router.post(
+  "/fund",
+  verifyAdminToken,
+  catchError(FundController.createFundRecord)
+);
+router.get(
+  "/fund",
+  verifyAdminToken,
+  catchError(FundController.getAllFundRecords)
+);
+router.get(
+  "/fund/:id",
+  verifyAdminToken,
+  catchError(FundController.getFundRecordById)
+);
+router.patch(
+  "/fund/:id",
+  verifyAdminToken,
+  catchError(FundController.updateFundRecord)
 );
 
 export default router;

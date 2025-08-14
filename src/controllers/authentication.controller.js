@@ -1,8 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import Admin from "../models/admin.model.js";
 import Staff from "../models/staff.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import { transporter } from "../utils/index.js";
 
 const generateToken = (id, name, role) => {
   return jwt.sign({ id, name, role }, process.env.JWT_SECRET);
@@ -152,6 +155,13 @@ class AuthController {
       password: hashedPassword,
     });
 
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: staff.email,
+      subject: "Password Update",
+      text: `Dear ${staff.name},.\n\nYour password for smart school system account is ${password}\n\nBest regards,\nSchool Management`,
+    });
+
     return res.status(201).json({
       success: true,
       message: "Staff registered successfully",
@@ -291,15 +301,6 @@ class AuthController {
 
     const resetURL = `${process.env.CLIENT_URL}/reset-password?token=${token}&id=${admin._id}`;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        port: process.env.SMTP_PORT,
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: admin.email,
@@ -346,6 +347,28 @@ class AuthController {
     return res.status(200).json({
       success: true,
       message: "Password set successfully",
+    });
+  }
+
+  // Login Admin
+  async updateProfile(req, res) {
+    const id = req.user;
+    const { name, email } = req.body;
+
+    const admin = await Admin.findByIdAndUpdate(
+      id,
+      { name, email },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated in successfully",
+      admin: {
+        _id: admin._id,
+        name: admin.name,
+        email: admin.email,
+      },
     });
   }
 }

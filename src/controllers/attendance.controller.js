@@ -1,6 +1,7 @@
 import Attendance from "../models/attendance.model.js";
 import Student from "../models/student.model.js";
 import nodemailer from "nodemailer";
+import { transporter } from "../utils/index.js";
 
 class AttendanceController {
   // Mark student attendance
@@ -10,15 +11,6 @@ class AttendanceController {
     if (!Array.isArray(attendanceRecords) || attendanceRecords.length === 0) {
       throw new Error("Attendance records must be a non-empty array");
     }
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        port: process.env.SMTP_PORT,
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     const formattedRecords = await Promise.all(
       attendanceRecords.map(async (record) => {
@@ -35,9 +27,7 @@ class AttendanceController {
         });
 
         if (existingAttendance) {
-          throw new Error(
-            `Attendance already marked`
-          );
+          throw new Error(`Attendance already marked`);
         }
 
         if (record.status === "Absent") {
@@ -69,9 +59,28 @@ class AttendanceController {
 
   // Retrieve attendance records for all students
   async getStudentAttendance(req, res) {
-    const attendances = await Attendance.find({
-      attendanceOf: "Student",
-    }).populate("referenceId", "name email");
+    const { classId, date } = req.query;
+
+    const filter = { attendanceOf: "Student" };
+
+    if (classId) {
+      filter.referenceId = classId;
+    }
+
+    if (date) {
+      const selectedDate = new Date(date);
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      filter.date = {
+        $gte: selectedDate,
+        $lt: nextDay,
+      };
+    }
+
+    const attendances = await Attendance.find(filter)
+      .populate("referenceId", "name email")
+      .sort({ date: -1 });
 
     return res.status(200).json({
       success: true,
@@ -138,14 +147,55 @@ class AttendanceController {
 
   // Retrieve attendance records for all staff members
   async getStaffAttendance(req, res) {
-    const attendances = await Attendance.find({
-      attendanceOf: "Staff",
-    }).populate("referenceId", "name email role");
+    const { staffType, date } = req.query;
+
+    const filter = { attendanceOf: "Staff" };
+
+    if (staffType) {
+      if (!["teaching", "non-teaching"].includes(staffType)) {
+        throw new Error("Invalid staffType. Use 'teaching' or 'non-teaching");
+      }
+
+      const roleValue = staffType === "teaching" ? "Teacher" : "Non-Teaching";
+      filter["referenceId.role"] = roleValue;
+    }
+
+    if (date) {
+      const selectedDate = new Date(date);
+      if (isNaN(selectedDate.getTime())) {
+        throw new Error("Invalid date format. Use YYYY-MM-DD");
+      }
+
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      filter.date = {
+        $gte: selectedDate,
+        $lt: nextDay,
+      };
+    }
+
+    const attendances = await Attendance.find(filter)
+      .populate({
+        path: "referenceId",
+        select: "name email role",
+        match: staffType
+          ? {
+              role: staffType === "teaching" ? "Teacher" : "Non-Teaching",
+            }
+          : {},
+      })
+      .sort({ date: -1 });
+
+    const filteredAttendances = staffType
+      ? attendances.filter((att) => att.referenceId !== null)
+      : attendances;
 
     return res.status(200).json({
       success: true,
       message: "Staff attendance records retrieved successfully",
-      attendances,
+      attendances: filteredAttendances,
+      count: filteredAttendances.length,
     });
   }
 
