@@ -23,7 +23,7 @@ class FundController {
 
     const fundRecords = await Fund.find({
       type: { $regex: new RegExp(type, "i") },
-    });
+    }).sort({ date: -1 });
 
     return res.status(201).json({
       success: true,

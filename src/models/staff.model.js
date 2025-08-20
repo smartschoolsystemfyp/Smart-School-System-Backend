@@ -71,11 +71,12 @@ const StaffSchema = new mongoose.Schema({
       return this.role === "Teacher";
     },
   },
+  status: {
+    type: String,
+    enum: ["Active", "Inactive"],
+  },
 });
 
 const Staff = mongoose.model("Staff", StaffSchema);
 
 export default Staff;
-
-
-

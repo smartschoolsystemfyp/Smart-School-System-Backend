@@ -103,6 +103,7 @@ class AuthController {
       accountNumber,
       role,
       password,
+      status,
     } = req.body;
 
     if (
@@ -152,6 +153,7 @@ class AuthController {
       ibanNumber,
       accountNumber,
       role,
+      status,
       password: hashedPassword,
     });
 

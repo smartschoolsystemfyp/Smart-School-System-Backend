@@ -20,6 +20,8 @@ class StudentController {
       cast,
       classId,
       orphan,
+      status,
+      result,
     } = req.body;
 
     if (
@@ -58,6 +60,8 @@ class StudentController {
       cast,
       orphan,
       class: classId,
+      status,
+      result,
     });
 
     return res.status(201).json({
@@ -71,10 +75,17 @@ class StudentController {
     const { classId, name } = req.query;
 
     const query = {};
+    query.status = "Active";
     if (classId) query.class = classId;
     if (name) query.name = { $regex: name, $options: "i" };
 
-    const students = await Student.find(query).populate("class", "className");
+    const students = await Student.find(query)
+      .populate("class", "className status")
+      .then((students) =>
+        students.filter(
+          (student) => student.class && student.class.status === "Active"
+        )
+      );
 
     const studentIds = students.map((student) => student._id);
 

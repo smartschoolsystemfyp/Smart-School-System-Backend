@@ -2,12 +2,13 @@ import Document from "../models/document.model.js";
 
 class DocumentController {
   async createDocumentRecord(req, res) {
-    const { name, classId, status } = req.body;
+    const { name, classId, status, collectedBy } = req.body;
 
     const documentRecord = await Document.create({
       name,
       class: classId,
       status,
+      collectedBy,
     });
 
     return res.status(201).json({
@@ -45,11 +46,11 @@ class DocumentController {
 
   async updateDocumentRecord(req, res) {
     const { id } = req.params;
-    const { name, classId, status } = req.body;
+    const { name, classId, status, collectedBy } = req.body;
 
     const updatedDocument = await Document.findByIdAndUpdate(
       id,
-      { name, classId, status },
+      { name, classId, status, collectedBy },
       { new: true }
     ).populate("class", "className");
 

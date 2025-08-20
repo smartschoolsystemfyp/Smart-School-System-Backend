@@ -67,7 +67,7 @@ class FeeController {
       .populate("markedBy", "name")
       .populate({
         path: "student",
-        select: "name class",
+        select: "name class rollNumber fatherName",
         populate: {
           path: "class",
           select: "className",

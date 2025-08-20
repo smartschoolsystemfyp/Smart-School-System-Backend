@@ -65,6 +65,14 @@ const StudentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  result: {
+    type: String,
+    enum: ["Pass", "Fail"],
+  },
+  status: {
+    type: String,
+    enum: ["Active", "Inactive"],
+  },
 });
 
 const Student = mongoose.model("Student", StudentSchema);

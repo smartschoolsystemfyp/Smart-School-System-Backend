@@ -4,10 +4,10 @@ import Staff from "../models/staff.model.js";
 class ClassController {
   // Create a new class
   async createClass(req, res) {
-    const { className, teacherId } = req.body;
+    const { className, teacherId, status } = req.body;
 
-    if (!className || !teacherId) {
-      throw new Error("Class name and teacher ID are required");
+    if (!className || !teacherId || !status) {
+      throw new Error("Class name, status and teacher IDare required");
     }
 
     const teacher = await Staff.findById(teacherId);
@@ -19,6 +19,7 @@ class ClassController {
     const newClass = await Class.create({
       className,
       teacher: teacherId,
+      status,
     });
 
     return res.status(201).json({

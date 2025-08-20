@@ -1,18 +1,18 @@
 import Subject from "../models/subject.model.js";
-import Class from "../models/class.model.js";
 
 class SubjectController {
   // Create a new subject
   async createSubject(req, res) {
-    const { subjectName, classId } = req.body;
+    const { subjectName, classId, totalMarks } = req.body;
 
-    if (!subjectName || !classId) {
+    if (!subjectName || !classId || !totalMarks) {
       throw new Error("All fields are required");
     }
 
     const subject = await Subject.create({
       subjectName,
       class: classId,
+      totalMarks,
     });
 
     return res.status(201).json({
@@ -42,9 +42,9 @@ class SubjectController {
   // Update a subject
   async updateSubject(req, res) {
     const { id } = req.params;
-    const { subjectName, classId } = req.body;
+    const { subjectName, classId, totalMarks } = req.body;
 
-    if (!id || (!subjectName && !classId)) {
+    if (!id || (!subjectName && !classId && !totalMarks)) {
       throw new Error("All fields are required");
     }
 
@@ -53,6 +53,7 @@ class SubjectController {
       {
         ...(subjectName && { subjectName }),
         ...(classId && { class: classId }),
+        ...(totalMarks && { totalMarks }),
       },
       { new: true }
     );

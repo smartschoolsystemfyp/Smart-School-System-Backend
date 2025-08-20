@@ -11,6 +11,10 @@ const ClassSchema = new mongoose.Schema({
     ref: "Staff",
     required: true,
   },
+  status: {
+    type: String,
+    enum: ["Active", "Inactive"],
+  },
 });
 
 const Class = mongoose.model("Class", ClassSchema);

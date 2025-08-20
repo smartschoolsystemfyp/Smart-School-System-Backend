@@ -8,6 +8,7 @@ const documentSchema = new mongoose.Schema({
     required: true,
   },
   status: { type: String, required: true },
+  collectedBy: { type: String, required: true },
 });
 
 const Document = mongoose.model("Document", documentSchema);
