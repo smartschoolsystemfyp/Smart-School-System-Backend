@@ -126,12 +126,12 @@ router.post(
 );
 router.get(
   "/attendance/staff",
-  verifyAdminToken,
+  // verifyAdminToken,
   catchError(AttendanceController.getStaffAttendance)
 );
 router.get(
   "/attendance/staff/:staffId",
-  verifyAdminToken,
+  // verifyAdminToken,
   catchError(AttendanceController.getAttendanceByStaffId)
 );
 
