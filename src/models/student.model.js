@@ -7,7 +7,8 @@ const StudentSchema = new mongoose.Schema({
   },
   rollNumber: {
     type: String,
-    required: true,
+    required: [true, "Roll no must be unique"],
+    unique: true,
   },
   fatherName: {
     type: String,
@@ -15,7 +16,6 @@ const StudentSchema = new mongoose.Schema({
   },
   motherName: {
     type: String,
-    required: true,
   },
   dob: {
     type: Date,
@@ -24,11 +24,10 @@ const StudentSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
-    required: true,
+    required: [true, "Email must be unique"],
   },
   phoneNumber: {
     type: String,
-    unique: true,
     required: true,
   },
   bFormNumber: {
@@ -42,11 +41,11 @@ const StudentSchema = new mongoose.Schema({
   },
   admissionDate: {
     type: Date,
-    required: true,
+    // required: true,
   },
   bloodGroup: {
     type: String,
-    required: true,
+    // required: true,
   },
   religion: {
     type: String,
@@ -54,7 +53,7 @@ const StudentSchema = new mongoose.Schema({
   },
   cast: {
     type: String,
-    required: true,
+    // required: true,
   },
   class: {
     type: mongoose.Schema.Types.ObjectId,
@@ -63,15 +62,16 @@ const StudentSchema = new mongoose.Schema({
   },
   orphan: {
     type: String,
-    required: true,
+    // required: true,
   },
   result: {
     type: String,
-    enum: ["Pass", "Fail"],
+    // enum: ["Pass", "Fail"],
   },
   status: {
     type: String,
     enum: ["Active", "Inactive"],
+    required: true,
   },
 });
 

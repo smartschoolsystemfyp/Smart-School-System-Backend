@@ -4,71 +4,100 @@ import Student from "../models/student.model.js";
 class StudentController {
   // Add a new student
   async registerStudent(req, res) {
-    const {
-      name,
-      rollNumber,
-      fatherName,
-      motherName,
-      dob,
-      email,
-      phoneNumber,
-      bFormNumber,
-      address,
-      admissionDate,
-      bloodGroup,
-      religion,
-      cast,
-      classId,
-      orphan,
-      status,
-      result,
-    } = req.body;
+    try {
+      const {
+        name,
+        rollNumber,
+        fatherName,
+        motherName,
+        dob,
+        email,
+        phoneNumber,
+        bFormNumber,
+        address,
+        admissionDate,
+        bloodGroup,
+        religion,
+        cast,
+        classId,
+        orphan,
+        status,
+        result,
+      } = req.body;
 
-    if (
-      !name ||
-      !rollNumber ||
-      !fatherName ||
-      !motherName ||
-      !dob ||
-      !email ||
-      !phoneNumber ||
-      !bFormNumber ||
-      !address ||
-      !admissionDate ||
-      !bloodGroup ||
-      !religion ||
-      !cast ||
-      !classId ||
-      !orphan
-    ) {
-      throw new Error("All fields are required");
+      if (
+        !name ||
+        !rollNumber ||
+        !fatherName ||
+        !motherName ||
+        !dob ||
+        !email ||
+        !phoneNumber ||
+        !bFormNumber ||
+        !address ||
+        !admissionDate ||
+        !bloodGroup ||
+        !religion ||
+        !cast ||
+        !classId ||
+        !orphan
+      ) {
+        throw new Error("All fields are required");
+      }
+
+      if (bFormNumber.length !== 13) {
+        throw new Error("B-form Not exceed from 13 didgits");
+      }
+
+      if (phoneNumber.length !== 11) {
+        throw new Error("Phone no Not exceed from 11 didgits");
+      }
+
+      // Check for uniqueness
+      const existingStudent = await Student.findOne({
+        $or: [{ rollNumber }, { bFormNumber }],
+      });
+
+      if (existingStudent) {
+        if (existingStudent.rollNumber === rollNumber) {
+          throw new Error("Roll number already exists");
+        }
+        if (existingStudent.bFormNumber === bFormNumber) {
+          throw new Error("B-Form number already exists");
+        }
+      }
+
+      const student = await Student.create({
+        name,
+        rollNumber,
+        fatherName,
+        motherName,
+        dob,
+        email,
+        phoneNumber,
+        bFormNumber,
+        address,
+        admissionDate,
+        bloodGroup,
+        religion,
+        cast,
+        orphan,
+        class: classId,
+        status,
+        result,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Student registered successfully",
+        student,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
     }
-
-    const student = await Student.create({
-      name,
-      rollNumber,
-      fatherName,
-      motherName,
-      dob,
-      email,
-      phoneNumber,
-      bFormNumber,
-      address,
-      admissionDate,
-      bloodGroup,
-      religion,
-      cast,
-      orphan,
-      class: classId,
-      status,
-      result,
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Student registered successfully",
-      student,
-    });
   }
 
   async getAllStudents(req, res) {

@@ -126,6 +126,15 @@ class AuthController {
       throw new Error("All fields are required");
     }
 
+    if (phoneNumber.length !== 11) {
+      throw new Error("Phone no Not exceed from 11 didgits");
+    }
+
+    if (cnicNumber.length !== 13) {
+      throw new Error("Cnic Not exceed from 13 didgits");
+    }
+
+
     if (role === "Teacher" && !password)
       throw new Error("Password is required for teacher");
 
